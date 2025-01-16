@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Details</title>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #fb974a;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background-color: white;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .header .title {
+            color: #ff6f00;
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        #clientDetails {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .client-info {
+            margin-bottom: 30px;
+        }
+
+        .client-info h2 {
+            color: orange;
+            font-size: 1.5em;
+            border-bottom: 2px solid orange;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .info-row span {
+            display: inline-block;
+            min-width: 160px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .info-row span+span {
+            font-weight: normal;
+            color: #333;
+        }
+
+        .children-list {
+            margin-top: 15px;
+        }
+
+        .children-list .child-info {
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+
+        .children-list .child-info:last-child {
+            margin-bottom: 0;
+        }
+
+        .back-button,
+        .edit-button,
+        .save-button {
+            background-color: #fff;
+            color: #ff6f00;
+            border: 2px solid #ff6f00;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover,
+        .edit-button:hover,
+        .save-button:hover {
+            background-color: #ff6f00;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .info-row span {
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <div class="header">
+            <img class="logo" src="YEGlogo.png" alt="Logo" />
+            <div class="title">Client Full Details</div>
+            <button class="back-button" onclick="goBack()">Back</button>
+        </div>
+        <div id="clientDetails">
+            <p>Loading client details...</p>
+        </div>
+
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+            import { getDatabase, ref, get, child, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyAkIzyJ_dqm1uE6vyxYj0nSoROoLv5A2oo",
+                authDomain: "yeg2-31e6e.firebaseapp.com",
+                databaseURL: "https://yeg2-31e6e-default-rtdb.asia-southeast1.firebasedatabase.app/",
+                projectId: "yeg2-31e6e",
+                storageBucket: "yeg2-31e6e.appspot.com",
+                messagingSenderId: "92507981715",
+                appId: "1:92507981715:web:57a15c03e6bdb0519a4a66",
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+            const clientDetailsDiv = document.getElementById("clientDetails");
+
+            const params = new URLSearchParams(window.location.search);
+            const clientId = params.get("clientId");
+            console.log("Client ID:", clientId); // Debugging log to check clientId
+
+            let isEditMode = false;
+            let originalClientData = {};
+            let originalChildrenData = {};
+
+            const fetchClientDetails = async (id) => {
+                const dbRef = ref(database);
+                try {
+                    const clientSnapshot = await get(child(dbRef, `clients/${id}`));
+                    if (clientSnapshot.exists()) {
+                        const clientData = clientSnapshot.val();
+                        console.log("Client Data:", clientData); // Debugging log to check client data
+                        originalClientData = clientData; // Store original data
+                        displayClientDetails(clientData);
+                        fetchChildrenDetails(id);
+                    } else {
+                        console.error("Client data does not exist for ID:", id); // Debugging log
+                        clientDetailsDiv.innerHTML = "<p>No data available for this client.</p>";
+                    }
+                } catch (error) {
+                    console.error("Error fetching client data:", error);
+                    clientDetailsDiv.innerHTML = "<p>Error fetching client data.</p>";
+                }
+            };
+
+            const fetchChildrenDetails = async (clientId) => {
+                const dbRef = ref(database);
+                try {
+                    const clientSnapshot = await get(child(dbRef, `clients/${clientId}`));
+                    if (clientSnapshot.exists()) {
+                        const clientData = clientSnapshot.val();
+                        const childrenData = {}; // Initialize an object to store children data
+
+                        const childKeys = Object.keys(clientData.children || {});
+                        const childNum = childKeys.filter(key => key.startsWith('child') && key.endsWith('_name')).length;
+                        for (let i = 1; i <= childNum; i++) {
+                            console.log(`Child ${i}:`, childrenData[i]);
+                            const childKey = `child${i}`; // Get fields like child1, child2 etc.
+                            if (clientData.children && clientData.children[`${childKey}_name`]) {
+                                childrenData[i] = {
+                                    name: clientData.children[`${childKey}_name`] || 'N/A',
+                                    email: clientData.children[`${childKey}_email`] || 'N/A',
+                                    gender: clientData.children[`${childKey}_gender`] || 'N/A',
+                                    ic: clientData.children[`${childKey}_ic`] || 'N/A',
+                                };
+                            }
+                        }
+
+                        originalChildrenData = childrenData; // Store original data
+
+                        // If children data exists, display it
+                        if (Object.keys(childrenData).length > 0) {
+                            displayChildrenDetails(childrenData);
+                        } else {
+                            const childrenList = document.querySelector(".children-list");
+                            if (childrenList) {
+                                childrenList.innerHTML = "<p>No children data found.</p>";
+                            }
+                        }
+                    } else {
+                        clientDetailsDiv.innerHTML = "<p>No client data found.</p>";
+                    }
+                } catch (error) {
+                    console.error("Error fetching children data:", error);
+                    const childrenList = document.querySelector(".children-list");
+                    if (childrenList) {
+                        childrenList.innerHTML = "<p>Error fetching children data.</p>";
+                    }
+                }
+            };
+
+            const displayClientDetails = (data) => {
+                clientDetailsDiv.innerHTML = `
+                    <div class="client-info">
+                        <h2>Client Information</h2>
+                        ${createInfoRow('Name', 'client_name', data.client_name)}
+                        ${createInfoRow('Gender', 'client_gender', data.client_gender)}
+                        ${createInfoRow('Contact', 'client_contact', data.client_contact)}
+                        ${createInfoRow('Email', 'client_email', data.client_email)}
+                        ${createInfoRow('Address', 'client_address', data.client_address)}
+                        ${createInfoRow('IC', 'client_ic', data.client_ic)}
+                        ${createInfoRow('Occupation', 'client_occupation', data.client_occupation)}
+                        ${createInfoRow('Smoker', 'client_smoker', data.client_smoker)}
+                    </div>
+                    <div class="client-info">
+                        <h2>Spouse Information</h2>
+                        ${createInfoRow('Name', 'spouse_name', data.spouse_name)}
+                        ${createInfoRow('Contact', 'spouse_contact', data.spouse_contact)}
+                        ${createInfoRow('Email', 'spouse_email', data.spouse_email)}
+                        ${createInfoRow('IC', 'spouse_ic', data.spouse_ic)}
+                        ${createInfoRow('Occupation', 'spouse_occupation', data.spouse_occupation)}
+                    </div>
+                    <div class="client-info">
+                        <h2>Children</h2>
+                        <div class="children-list">
+                            <p>Loading children details...</p>
+                        </div>
+                    </div>
+                    <button class="edit-button" onclick="toggleEditMode()">Edit</button>
+                `;
+            };
+
+            const displayChildrenDetails = (childrenData) => {
+                const childrenHTML = Object.keys(childrenData).map(key => {
+                    const child = childrenData[key];
+                    return `
+                        <div class="child-info">
+                            ${createInfoRow('Name', `child${key}_name`, child.name)}
+                            ${createInfoRow('Email', `child${key}_email`, child.email)}
+                            ${createInfoRow('Gender', `child${key}_gender`, child.gender)}
+                            ${createInfoRow('IC', `child${key}_ic`, child.ic)}
+                        </div>
+                    `;
+                }).join('');
+
+                const childrenList = document.querySelector(".children-list");
+                if (childrenList) {
+                    childrenList.innerHTML = childrenHTML;
+                }
+            };
+
+            const createInfoRow = (label, id, value) => {
+                if (isEditMode) {
+                    return `
+                        <div class="info-row">
+                            <span>${label}:</span>
+                            <span><input type="text" id="${id}" value="${value || 'N/A'}"></span>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="info-row">
+                            <span>${label}:</span>
+                            <span id="${id}">${value || 'N/A'}</span>
+                        </div>
+                    `;
+                }
+            };
+
+            const toggleEditMode = () => {
+                isEditMode = !isEditMode;
+                displayClientDetails(originalClientData);
+                displayChildrenDetails(originalChildrenData);
+
+                if (isEditMode) {
+                    const saveButton = document.createElement('button');
+                    saveButton.className = 'save-button';
+                    saveButton.innerText = 'Save';
+                    saveButton.onclick = saveClientDetails;
+                    clientDetailsDiv.appendChild(saveButton);
+                }
+            };
+
+            window.toggleEditMode = toggleEditMode; // Ensure the function is globally accessible
+
+            const saveClientDetails = async () => {
+                const updatedData = {
+                    client_name: document.getElementById('client_name').value,
+                    client_gender: document.getElementById('client_gender').value,
+                    client_contact: document.getElementById('client_contact').value,
+                    client_email: document.getElementById('client_email').value,
+                    client_address: document.getElementById('client_address').value,
+                    client_ic: document.getElementById('client_ic').value,
+                    client_occupation: document.getElementById('client_occupation').value,
+                    client_smoker: document.getElementById('client_smoker').value,
+                    spouse_name: document.getElementById('spouse_name').value,
+                    spouse_contact: document.getElementById('spouse_contact').value,
+                    spouse_email: document.getElementById('spouse_email').value,
+                    spouse_ic: document.getElementById('spouse_ic').value,
+                    spouse_occupation: document.getElementById('spouse_occupation').value,
+                    children: {}
+                };
+
+                // Collect children data
+                const childrenList = document.querySelector(".children-list").children;
+                for (let i = 0; i < childrenList.length; i++) {
+                    const child = childrenList[i];
+                    const childKey = `child${i + 1}`;
+                    updatedData.children[`${childKey}_name`] = child.querySelector(`#child${i + 1}_name`).value;
+                    updatedData.children[`${childKey}_email`] = child.querySelector(`#child${i + 1}_email`).value;
+                    updatedData.children[`${childKey}_gender`] = child.querySelector(`#child${i + 1}_gender`).value;
+                    updatedData.children[`${childKey}_ic`] = child.querySelector(`#child${i + 1}_ic`).value;
+                }
+
+                try {
+                    const clientRef = ref(database, `clients/${clientId}`);
+                    await update(clientRef, updatedData);
+                    alert('Client details updated successfully!');
+                    isEditMode = false;
+                    fetchClientDetails(clientId);
+                } catch (error) {
+                    console.error("Error updating client details:", error);
+                    alert('Error updating client details.');
+                }
+            };
+
+            if (clientId) {
+                fetchClientDetails(clientId);
+            } else {
+                clientDetailsDiv.innerHTML = "<p>No client ID provided.</p>";
+            }
+
+            window.goBack = function () {
+                window.location.href = "home2.html";
+            }
+        </script>
+    </div>
+</body>
+
+</html>

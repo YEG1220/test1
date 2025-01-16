@@ -1,0 +1,510 @@
+<html>
+
+<head>
+    <title>Client Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
+    <style>
+        body {
+    font-family: 'Jost', Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: rgba(255, 166, 0, 0.148);
+    color: rgb(255, 140, 0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.header .title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.back-button {
+    background-color: #fff;
+    color: #ff6f00;
+    border: 2px solid #ff6f00;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin-left: auto;
+}
+
+.back-button:hover {
+    background-color: #ff6f00;
+    color: white;
+}
+
+.content {
+    padding: 20px;
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.logo {
+    width: 150px; /* Adjust logo width */
+    height: auto; /* Maintain aspect ratio */
+    margin-left: 20px;
+}
+
+.card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card h3 {
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: #ff6f00;
+}
+
+.card label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.card input,
+.card select {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.card input:focus,
+.card select:focus {
+    border-color: #ff6f00;
+    box-shadow: 0 0 5px rgba(255, 111, 0, 0.3);
+}
+
+button {
+    background-color: #ff6f00;
+    color: white;
+    border: none;
+    padding: 10px 375px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background-color: #e65c00;
+}
+
+#addChildButton {
+    background-color: #ff6f00;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+#addChildButton:hover {
+    background-color: #e65c00;
+}
+
+#childContainer {
+    margin-top: 20px;
+}
+
+.child-form {
+    position: relative;
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.child-form h4 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #ff6f00;
+}
+
+.child-form input,
+.child-form select {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.child-form input:focus,
+.child-form select:focus {
+    border-color: #ff6f00;
+    box-shadow: 0 0 5px rgba(255, 111, 0, 0.3);
+}
+
+.removeChildButton {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: #ff6f00;
+    color: white;
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.removeChildButton:hover {
+    background-color: #e65c00;
+}
+
+@media (max-width: 768px) {
+    .content {
+        padding: 10px;
+    }
+
+    .card input,
+    .card select,
+    .child-form input,
+    .child-form select {
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    .removeChildButton {
+        top: 10px;
+        right: 10px;
+    }
+
+    .logo {
+        width: 120px; /* Adjust logo width for smaller screens */
+    }
+}
+
+    </style>
+
+<script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAkIzyJ_dqm1uE6vyxYj0nSoROoLv5A2oo",
+        authDomain: "yeg2-31e6e.firebaseapp.com",
+        databaseURL: "https://yeg2-31e6e-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "yeg2-31e6e",
+        storageBucket: "yeg2-31e6e.appspot.com",
+        messagingSenderId: "92507981715",
+        appId: "1:92507981715:web:57a15c03e6bdb0519a4a66",
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Function to handle the sidebar option click and highlight the selected option
+    function handleOptionClick(event) {
+            const selectedOption = event.target.closest('.icon'); // Get the closest .icon
+
+            // Remove 'selected' class from all icons
+            const icons = document.querySelectorAll('.sidebar .icon');
+            icons.forEach(icon => {
+                icon.classList.remove('selected');
+            });
+
+            // Add 'selected' class to the clicked icon
+            selectedOption.classList.add('selected');
+        }
+        
+    window.handleSubmit = () => {
+        const formData = {
+            client: {},
+            spouse: {},
+            children: []
+        };
+
+        // Collect client data
+        document.querySelectorAll('.client input, .client select').forEach(input => {
+            formData.client[input.name.replace('client_', '')] = input.value.trim();
+        });
+
+        const clientIC = formData.client.ic; // Extract client IC
+
+        // Validation: Ensure required fields are filled
+        const requiredFields = ['name', 'email', 'ic', 'contact', 'gender', 'address', 'smoker', 'maritalStatus'];
+        for (let field of requiredFields) {
+            if (!formData.client[field]) {
+                alert(`Please fill out the ${field} field.`);
+                return;
+            }
+        }
+
+        // Validate IC for invalid characters
+        if (!clientIC || /[.#$[\]]/.test(clientIC)) {
+            alert("Invalid IC. IC cannot contain '.', '#', '$', '[', or ']' characters.");
+            return;
+        }
+
+        // Collect spouse data
+        document.querySelectorAll('.spouse input, .spouse select').forEach(input => {
+            if (input.value.trim()) {
+                formData.spouse[input.name.replace('spouse_', '')] = input.value.trim();
+            }
+        });
+
+        // Collect children data
+        document.querySelectorAll('.child-form').forEach((childCard, index) => {
+            const childData = {};
+            childCard.querySelectorAll('input, select').forEach(input => {
+                if (input.value.trim()) {
+                    const key = input.name.split('_').slice(2).join('_'); // Extract the key (e.g., "name", "email")
+                    childData[key] = input.value.trim();
+                }
+            });
+            if (Object.keys(childData).length > 0) {
+                formData.children.push(childData);
+            }
+        });
+
+        console.log("Form Data:", formData);
+
+        // Structure the data as required
+        const formattedData = {
+            client_name: formData.client.name,
+            client_ic: formData.client.ic,
+            client_dob: formData.client.dob,
+            client_email: formData.client.email,
+            client_contact: formData.client.contact,
+            client_gender: formData.client.gender,
+            client_address: formData.client.address,
+            client_occupation: formData.client.occupation,
+            client_smoker: formData.client.smoker,
+            client_maritalStatus: formData.client.maritalStatus,
+            client_childNum: formData.client.childNum || null,
+            spouse_name: formData.spouse.name || null,
+            spouse_ic: formData.spouse.ic || null,
+            spouse_email: formData.spouse.email || null,
+            spouse_contact: formData.spouse.contact || null,
+            spouse_gender: formData.spouse.gender || null,
+            spouse_address: formData.spouse.address || null,
+            spouse_occupation: formData.spouse.occupation || null,
+            children: formData.children.reduce((acc, child, index) => {
+                acc[`child${index + 1}_name`] = child.name || null;
+                acc[`child${index + 1}_address`] = child.address || null;
+                acc[`child${index + 1}_email`] = child.email || null;
+                acc[`child${index + 1}_ic`] = child.ic || null;
+                acc[`child${index + 1}_gender`] = child.gender || null;
+                return acc;
+            }, {})
+        };
+
+        // Save to Firebase
+        const databaseRef = ref(database, `clients/${clientIC}`);
+        get(databaseRef)
+            .then(snapshot => {
+                if (snapshot.exists()) {
+                    alert("A client with this IC already exists.");
+                    return;
+                }
+
+                set(databaseRef, formattedData)
+                    .then(() => {
+                        alert("Data saved successfully!");
+                        // Clear the form after successful save
+                        document.querySelectorAll('input, select').forEach(input => input.value = '');
+                        document.getElementById('childContainer').innerHTML = '';
+                    })
+                    .catch(error => {
+                        console.error("Error saving data:", error);
+                    });
+            })
+            .catch(error => {
+                console.error("Error checking IC existence:", error);
+            });
+    };
+
+    let childIndex = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const addChildButton = document.getElementById('addChildButton');
+        const childContainer = document.getElementById('childContainer');
+
+        if (!addChildButton || !childContainer) {
+            console.error("Required elements not found!");
+            return;
+        }
+
+        addChildButton.addEventListener('click', () => {
+            childIndex++;
+
+            // Create a new child form
+            const childForm = document.createElement('div');
+            childForm.classList.add('card', 'child-form');
+            childForm.setAttribute('data-index', childIndex);
+
+            childForm.innerHTML = `
+                <h4>Child ${childIndex}</h4>
+                <label>Name:</label>
+                <input type="text" name="child_${childIndex}_name">
+                <label>Email:</label>
+                <input type="email" name="child_${childIndex}_email">
+                <label>IC:</label>
+                <input type="text" name="child_${childIndex}_ic">
+                <label>Gender:</label>
+                <select name="child_${childIndex}_gender">
+                    <option value="" disabled selected>Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+                <label>Address:</label>
+                <input type="text" name="child_${childIndex}_address">
+                <button type="button" class="removeChildButton">Remove Child</button>
+            `;
+
+            childContainer.appendChild(childForm);
+
+            // Bind the remove button click event
+            childForm.querySelector('.removeChildButton').addEventListener('click', function () {
+                removeChild(childForm);
+            });
+        });
+
+    });
+
+    // Remove child form function
+    function removeChild(childForm) {
+        const childContainer = document.getElementById('childContainer');
+
+        if (childContainer.contains(childForm)) {
+            childContainer.removeChild(childForm);
+            const childForms = childContainer.querySelectorAll('.child-form');
+        childForms.forEach((form, index) => {
+            const newIndex = index + 1;
+            form.setAttribute('data-index', newIndex);
+            form.querySelector('h4').textContent = `Child ${newIndex}`;
+            
+            // 更新表单字段名称
+            form.querySelectorAll('input, select').forEach(input => {
+                const originalName = input.getAttribute('name');
+                if (originalName) {
+                    const updatedName = originalName.replace(/\d+/, newIndex);
+                    input.setAttribute('name', updatedName);
+                }
+            });
+        });
+
+        // 更新全局索引
+        childIndex = childForms.length;
+    } else {
+            console.error("Cannot remove child form: Child form not found or already removed.");
+        }
+    }
+</script>
+
+<body>
+    <div class="header">
+        <img class="logo" src="YEGlogo.png">
+        <a href="#" class="back-button" onclick="window.history.back()">Back</a>
+        <div class="title">Client Management System</div>
+    </div>
+
+    <div class="content">
+        <!-- Client Information Form -->
+        <div class="card client">
+            <h3>Client Information</h3>
+            <label>Name:</label>
+            <input type="text" name="client_name" required>
+            <label>Email:</label>
+            <input type="email" name="client_email" required>
+            <label>IC:</label>
+            <input type="number" name="client_ic" required>
+            <label>Date of Birth:</label>
+            <input type="date" name="client_dob" required>
+            <label>Contact:</label>
+            <input type="number" name="client_contact" required>
+            <label>Gender:</label>
+            <select name="client_gender" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+            <label>Address:</label>
+            <input type="text" name="client_address" required>
+            <label>Occupation:</label>
+            <input type="text" name="client_occupation" required>
+            <label>Smoker:</label>
+            <select name="client_smoker">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+            </select>
+            <label>Marital Status:</label>
+            <select name="client_maritalStatus">
+                <option value="Single">Single</option>
+                <option value="Married">Married</option>
+            </select>
+            <label>Number of Child:</label>
+            <input type="number" name="client_childNum">
+        </div>
+
+        <!-- Spouse Information Form -->
+        <div class="card spouse">
+            <h3>Spouse Information (If Any)</h3>
+            <label>Name:</label>
+            <input type="text" name="spouse_name">
+            <label>Email:</label>
+            <input type="email" name="spouse_email">
+            <label>IC:</label>
+            <input type="text" name="spouse_ic">
+            <label>Contact:</label>
+            <input type="number" name="spouse_contact">
+            <label>Gender:</label>
+            <select name="spouse_gender">
+                <option value="" disabled selected>Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+            <label>Address:</label>
+            <input type="text" name="spouse_address">
+            <label>Occupation:</label>
+            <input type="text" name="spouse_occupation">
+        </div>
+
+        <!-- Children Information Form -->
+        <div id="childContainer"></div>
+        <button id="addChildButton" type="button">Add Child</button>
+
+        <button type="button" onclick="handleSubmit()">Submit</button>
+    </div>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&amp;display=swap" rel="stylesheet">
+    <style>
+        /* Flexibility for the header */
+        .header {
+            background-color: rgba(255, 166, 0, 0.148);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            /* Vertically center-align */
+            justify-content: space-between;
+            /* Distribute elements evenly */
+            flex-wrap: wrap;
+            /* Ensure elements wrap if necessary */
+            margin-bottom: 20px;
+            /* Added margin to separate from the search bar */
+        }
+
+        .logo {
+            width: 150px;
+            /* Adjust logo width */
+            height: auto;
+            /* Maintain aspect ratio */
+            margin-left: 20px;
+        }
+
+        h1 {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            color: #ff6f00;
+            font-size: 26px;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        /* Ensuring Add button stays aligned properly */
+        .add-button {
+            display: inline-block;
+            background-color: #ff6f00;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-left: auto;
+            /* Auto to push the button to the right */
+        }
+
+        .add-button:hover {
+            background-color: #ff6f00;
+        }
+
+        /* Ensure search bar and button align well on small screens */
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            /* Adjust the space between the search bar and table */
+            justify-content: flex-start;
+            padding-left: 10px;
+            width: 100%;
+        }
+
+        .search-container input {
+            flex-grow: 1;
+            /* Allow the input to take available space */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            margin-left: 0;
+            margin-right: 10px;
+            margin-bottom: 15px;
+            /* Increased margin to separate from the table */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            /* Ensures some space above the table */
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            /* Adjust padding for more space */
+            text-align: center;
+        }
+
+        th {
+            background-color: #ffb969;
+        }
+
+        /* Style for the "More Detail" button */
+        .detail-button {
+            background-color: #ffdd7e;
+            /* Green background */
+            color: rgb(0, 0, 0);
+            border: none;
+            padding: 10px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 15px;
+            /* Rounded corners */
+            text-transform: uppercase;
+            /* Uppercase text */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            /* Smooth transition */
+        }
+
+        /* Hover state for the "More Detail" button */
+        .detail-button:hover {
+            background-color: #ffbb00;
+            /* Darker green on hover */
+            transform: scale(1.05);
+            /* Slightly enlarge the button on hover */
+        }
+
+        /* Focus state for accessibility */
+        .detail-button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(255, 200, 0, 0.5);
+            /* Green glow around the button */
+        }
+
+
+        /* Ensure table layout is responsive */
+        @media screen and (max-width: 768px) {
+            .content {
+                margin-left: 0;
+                padding: 10px;
+            }
+
+            .search-container {
+                flex-direction: column;
+                /* Stack elements vertically */
+                gap: 10px;
+            }
+
+            .add-button {
+                margin-left: 0;
+                /* Ensure the button is centered or aligned properly */
+            }
+
+            table {
+                font-size: 14px;
+                /* Adjust font size for smaller screens */
+            }
+
+            th,
+            td {
+                padding: 8px;
+                /* Reduce padding on smaller screens */
+            }
+
+            .logo {
+                width: 120px;
+                /* Adjust logo width for smaller screens */
+            }
+
+            h1 {
+                font-size: 20px;
+                /* Adjust title font size */
+            }
+
+            .client-info {
+                grid-template-columns: 1fr;
+                /* Stack the client info if necessary */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <img class="logo" src="YEGlogo.png">
+        <h1>Client Management System</h1>
+        <a class="add-button" href="add.html">Add</a>
+    </div>
+    <div class="search-container">
+        <input type="text" id="searchBar" placeholder="Search by client name...">
+    </div>
+    <div class="container">
+        <table id="clientTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Client Name</th>
+                    <th>Client IC</th>
+                    <th>Client Contact</th>
+                    <th>Client DOB</th>
+                    <th>Client Gender</th>
+                    <th>Spouse Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Data will be inserted here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAkIzyJ_dqm1uE6vyxYj0nSoROoLv5A2oo",
+            authDomain: "yeg2-31e6e.firebaseapp.com",
+            databaseURL: "https://yeg2-31e6e-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "yeg2-31e6e",
+            storageBucket: "yeg2-31e6e.appspot.com",
+            messagingSenderId: "92507981715",
+            appId: "1:92507981715:web:57a15c03e6bdb0519a4a66",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const tableBody = document.getElementById("tableBody");
+        const searchBar = document.getElementById("searchBar");
+        let clientList = []; // Original client list
+        let filteredList = []; // List filtered by search
+
+        // Function to fetch all data under 'clients'
+        const fetchClients = async () => {
+            const dbRef = ref(database);
+            try {
+                const snapshot = await get(child(dbRef, 'clients'));
+                if (snapshot.exists()) {
+                    const clients = snapshot.val();
+                    clientList = Object.values(clients); // Convert object to array
+                    filteredList = [...clientList]; // Initialize filtered list
+                    renderTable(filteredList);
+                } else {
+                    console.error("No clients data available.");
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        // Function to render the table
+        const renderTable = (list) => {
+            tableBody.innerHTML = ""; // Clear existing table rows
+            list.forEach((client, index) => {
+                const row = document.createElement("tr");
+
+                // Create table cells with client data
+                const cells = [
+                    index + 1, // Serial number
+                    client.client_name || "N/A",
+                    client.client_ic || "N/A",
+                    client.client_contact || "N/A",
+                    client.client_dob || "N/A",
+                    client.client_gender || "N/A",
+                    client.spouse_name || "N/A",
+                ];
+
+                cells.forEach((cellData) => {
+                    const cell = document.createElement("td");
+                    cell.textContent = cellData;
+                    row.appendChild(cell);
+                });
+
+                // Add "More Detail" button
+                const detailCell = document.createElement("td");
+                const detailButton = document.createElement("button");
+                detailButton.textContent = "More";
+                detailButton.className = "detail-button"; // Add class for styling
+                detailButton.addEventListener("click", () => {
+                    // Redirect to detail.html with client ID as a query parameter
+                    const clientID = client.client_ic || ""; // Use a unique identifier
+                    window.location.href = `detail.html?clientId=${clientID}`;
+                });
+                detailCell.appendChild(detailButton);
+                row.appendChild(detailCell);
+
+                tableBody.appendChild(row); // Add the row to the table
+            });
+        };
+
+        // Event listener for search bar
+        searchBar.addEventListener("input", (event) => {
+            const searchTerm = event.target.value.toLowerCase();
+
+            filteredList = clientList.filter(client => {
+                return client.client_name && client.client_name.toLowerCase().includes(searchTerm) ||
+                (client.spouse_name || "").toLowerCase().includes(searchTerm)
+            });
+            renderTable(filteredList);
+        });
+
+        fetchClients();
+    </script>
+</body>
+
+</html>

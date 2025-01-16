@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Jost', sans-serif;
+            background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+        }
+        .main {
+        width: 350px;
+        height: 500px;
+        overflow: hidden;
+        background: url("login.jpeg") no-repeat center/cover;
+        border-radius: 10px;
+        box-shadow: 5px 20px 50px #000;
+        }
+        input {
+        width: 60%;
+        height: 20px;
+        background: #e0dede;
+        justify-content: center;
+        display: flex;
+        margin: 20px auto;
+        padding: 10px;
+        border: none;
+        outline: none;
+        border-radius: 5px;
+        }
+        button {
+        width: 60%;
+        height: 40px;
+        margin: 10px auto;
+        justify-content: center;
+        display: block;
+        color: #fff;
+        background: #ad6500;
+        font-size: 1em;
+        font-weight: bold;
+        margin-top: 20px;
+        outline: none;
+        border: none;
+        border-radius: 5px;
+        transition: .2s ease-in;
+        cursor: pointer;
+        }
+        button:hover {
+            background: orange;
+        }
+        label {
+        color: #fff;
+        font-size: 2.3em;
+        justify-content: center;
+        display: flex;
+        margin-top: 100px;
+        font-weight: bold;
+        }
+        .signin-link {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        .signin-link a {
+            color: #fff;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .signin-link a:hover {
+            color: orange;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <form id="loginForm">
+            <label>LOGIN</label>
+            <input type="text" id="agentId" name="agentId" placeholder="Agent ID" required>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+            <button type="submit">Enter</button>
+            <div class="signin-link">
+                Already have an account? <a href="signup.html">Sign In</a>
+            </div>
+        </form>
+    </div>
+    
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAkIzyJ_dqm1uE6vyxYj0nSoROoLv5A2oo",
+            authDomain: "yeg2-31e6e.firebaseapp.com",
+            databaseURL: "https://yeg2-31e6e-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "yeg2-31e6e",
+            storageBucket: "yeg2-31e6e.appspot.com",
+            messagingSenderId: "92507981715",
+            appId: "1:92507981715:web:57a15c03e6bdb0519a4a66",
+            measurementId: "G-45DD2PGT1D"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Handle login
+        const handleLogin = async (event) => {
+            event.preventDefault();
+            const agentId = document.getElementById("agentId").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            if (!agentId || !password) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            try {
+                console.log("Attempting to fetch users from database...");
+                const dbRef = ref(database);
+                const snapshot = await get(child(dbRef, `users`));
+
+                if (snapshot.exists()) {
+                    const users = snapshot.val();
+                    console.log("Fetched users:", users);
+
+                    let userFound = false;
+
+                    for (const userId in users) {
+                        const user = users[userId];
+                        console.log(`Checking user ID: ${userId}, Data:`, user);
+
+                        if (user.agentId === agentId) {
+                            userFound = true;
+
+                            if (user.password === password) {
+                                alert("Login successful!");
+                                window.location.href = "home2.html";
+                                return;
+                            } else {
+                                alert("Incorrect password. Please try again.");
+                                return;
+                            }
+                        }
+                    }
+
+                    if (!userFound) {
+                        alert("Agent ID not found. Please check your credentials.");
+                    }
+                } else {
+                    alert("No users found in the database.");
+                    console.log("Database is empty or inaccessible.");
+                }
+            } catch (error) {
+    console.error("Error during login process:", error);
+    if (error.message.includes("Permission denied")) {
+        alert("Database access denied. Please check Firebase rules.");
+    } else {
+        alert("Login failed: " + error.message);
+    }
+}
+
+        };
+
+        // Add event listener to the form
+        const loginForm = document.getElementById("loginForm");
+        loginForm.addEventListener("submit", handleLogin);
+    </script>
+</body>
+</html>

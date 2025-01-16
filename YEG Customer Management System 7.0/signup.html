@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
+    <style>
+        /* General styles */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Jost', sans-serif;
+            background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+        }
+        .main {
+            width: 350px;
+            height: 500px;
+            overflow: hidden;
+            background: url("login.jpeg") no-repeat center/cover;
+            border-radius: 10px;
+            box-shadow: 5px 20px 50px #000;
+        }
+        input {
+            width: 60%;
+            height: 20px;
+            background: #e0dede;
+            justify-content: center;
+            display: flex;
+            margin: 20px auto;
+            padding: 10px;
+            border: none;
+            outline: none;
+            border-radius: 5px;
+        }
+        button {
+            width: 60%;
+            height: 40px;
+            margin: 10px auto;
+            justify-content: center;
+            display: block;
+            color: #fff;
+            background: #ad6500;
+            font-size: 1em;
+            font-weight: bold;
+            margin-top: 20px;
+            outline: none;
+            border: none;
+            border-radius: 5px;
+            transition: .2s ease-in;
+            cursor: pointer;
+        }
+        button:hover {
+            background: orange;
+        }
+        label {
+            color: #fff;
+            font-size: 2.3em;
+            justify-content: center;
+            display: flex;
+            margin: 60px;
+            margin-top: 80px;
+            margin-right: 60px;
+            margin-bottom: 40px;
+            margin-left: 60px;
+            font-weight: bold;
+        }
+        .signin-link {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        .signin-link a {
+            color: #fff;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .signin-link a:hover {
+            color: orange;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <!-- Sign Up Form -->
+        <form id="signupForm">
+            <label>Sign Up</label>
+            <!-- Agent ID -->
+            <input type="text" name="agentId" placeholder="Agent ID (4-8 digits)" required pattern="\d{4,8}">
+            <!-- Email -->
+            <input type="email" name="email" placeholder="Email" required>
+            <!-- Password -->
+            <input type="password" name="password" placeholder="Password (6+ characters)" required minlength="6">
+            <!-- Submit -->
+            <button type="submit">Sign Up</button>
+            <div class="signin-link">
+                Already have an account? <a href="Login.html">Log In</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Firebase Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } 
+            from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+        import { getDatabase, ref, set } 
+            from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAkIzyJ_dqm1uE6vyxYj0nSoROoLv5A2oo",
+            authDomain: "yeg2-31e6e.firebaseapp.com",
+            databaseURL: "https://yeg2-31e6e-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "yeg2-31e6e",
+            storageBucket: "yeg2-31e6e.appspot.com",
+            messagingSenderId: "92507981715",
+            appId: "1:92507981715:web:57a15c03e6bdb0519a4a66",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        // Sign Up Handler
+        const signupForm = document.getElementById("signupForm");
+        signupForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            
+            // Retrieve form values
+            const agentId = signupForm.agentId.value.trim();
+            const email = signupForm.email.value.trim();
+            const password = signupForm.password.value.trim();
+
+            try {
+                // Create user in Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Save Agent ID and Email in Realtime Database
+                await set(ref(database, `users/${user.uid}`), {
+                    agentId: agentId,
+                    email: email,
+                    password: password,
+                });
+
+                alert("Sign-Up Successful! Redirecting to Login...");
+                window.location.href = "login.html";
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
