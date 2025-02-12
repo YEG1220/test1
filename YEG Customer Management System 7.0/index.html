@@ -19,7 +19,7 @@
         }
         .main {
             width: 350px;
-            height: 500px;
+            height: 550px;
             overflow: hidden;
             background: url("login.jpeg") no-repeat center/cover;
             border-radius: 10px;
@@ -63,9 +63,9 @@
             justify-content: center;
             display: flex;
             margin: 60px;
-            margin-top: 80px;
+            margin-top: 100px;
             margin-right: 60px;
-            margin-bottom: 40px;
+            margin-bottom: 0px;
             margin-left: 60px;
             font-weight: bold;
         }
@@ -90,15 +90,20 @@
         <form id="signupForm">
             <label>Sign Up</label>
             <!-- Agent ID -->
-            <input type="text" name="agentId" placeholder="Agent ID (4-8 digits)" required pattern="\d{4,8}">
+            <input type="text" name="agentId" placeholder="Agent ID (7 digits only)" required pattern="\d{7}">
+            <!-- Name -->
+            <input type="text" name="name" placeholder="Name" required>
             <!-- Email -->
             <input type="email" name="email" placeholder="Email" required>
             <!-- Password -->
-            <input type="password" name="password" placeholder="Password (6+ characters)" required minlength="6">
+            <div class="input">
+                <input type="password" id="password" name="password" placeholder="Password (6+ characters)" required minlength="6">
+                <i id="togglePassword" class="fa fa-eye"></i>
+            </div>
             <!-- Submit -->
             <button type="submit">Sign Up</button>
             <div class="signin-link">
-                Already have an account? <a href="login.html">Log In</a>
+                Already have an account? <a href="Login.html">Log In</a>
             </div>
         </form>
     </div>
@@ -133,6 +138,7 @@
             
             // Retrieve form values
             const agentId = signupForm.agentId.value.trim();
+            const name = signupForm.name.value.trim();
             const email = signupForm.email.value.trim();
             const password = signupForm.password.value.trim();
 
@@ -141,9 +147,10 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // Save Agent ID and Email in Realtime Database
-                await set(ref(database, `users/${user.uid}`), {
+                // Save Agent ID, Name, Email, and Password in Realtime Database
+                await set(ref(database, `users/${agentId}`), {
                     agentId: agentId,
+                    name: name,
                     email: email,
                     password: password,
                 });
@@ -153,6 +160,42 @@
             } catch (error) {
                 alert("Error: " + error.message);
             }
+        });
+
+        try {
+            // Firebase Sign-Up
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Save user data
+            await set(ref(database, `users/${agentId}`), {
+                agentId: agentId,
+                name: name,
+                email: email,
+                password: password,
+            });
+
+            alert("Sign-Up Successful! Redirecting to Login...");
+            window.location.href = "login.html";
+        } catch (error) {
+            if (error.code === "auth/email-already-in-use") {
+                errorMessage = "This email is already registered.";
+            } else if (error.code === "auth/invalid-email") {
+                errorMessage = "Please enter a valid email.";
+            } else if (error.code === "auth/weak-password") {
+                errorMessage = "Password must be at least 6 characters.";
+            }
+            alert(errorMessage);
+        }
+
+        // Toggle password visibility
+        const togglePassword = document.getElementById("togglePassword");
+        const passwordInput = document.getElementById("password");
+
+        togglePassword.addEventListener("click", () => {
+            const type = passwordInput.type === "password" ? "text" : "password";
+            passwordInput.type = type;
+            togglePassword.classList.toggle("fa-eye-slash");
         });
     </script>
 </body>
