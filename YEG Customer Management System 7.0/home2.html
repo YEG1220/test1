@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -42,23 +43,38 @@
             flex-grow: 1;
         }
 
-        /* Ensuring Add button stays aligned properly */
-        .add-button {
-            display: inline-block;
+        .logOut-button{
+            padding: 12px 25px;
             background-color: #ff6f00;
             color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 10px 15px;
-            font-size: 16px;
-            cursor: pointer;
+            font-size: 14px;
             text-decoration: none;
-            margin-left: auto;
-            /* Auto to push the button to the right */
+            border-radius: 30px;
+            display: inline-block;
+            margin-right: 15px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            
         }
 
-        .add-button:hover {
+        .add-button {
+            padding: 12px 25px;
             background-color: #ff6f00;
+            color: white;
+            font-size: 14px;
+            text-decoration: none;
+            border-radius: 30px;
+            display: inline-block;
+            margin-right: 15px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .logOut-button:hover,
+        .add-button:hover {
+            background-color: #ff8c00;
         }
 
         /* Ensure search bar and button align well on small screens */
@@ -81,7 +97,7 @@
             border-radius: 20px;
             margin-left: 0;
             margin-right: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 1px;
             /* Increased margin to separate from the table */
         }
 
@@ -188,10 +204,16 @@
     <div class="header">
         <img class="logo" src="YEGlogo.png">
         <h1>Client Management System</h1>
-        <a class="add-button" href="add.html">Add</a>
+        <span id="agentDisplay" style="margin-left: 10px; margin-right: 10px; font-size: 18px; color: gray; text-align: right;"></span>
     </div>
     <div class="search-container">
+        <div>
+            <button class="add-button" id="addButton">Add</button>
+        </div>
         <input type="text" id="searchBar" placeholder="Search by client name...">
+        <div>
+            <button class="logOut-button" id="logoutButton">Logout</button>
+        </div>
     </div>
     <div class="container">
         <table id="clientTable">
@@ -239,15 +261,23 @@
         // Function to fetch all data under 'clients'
         const fetchClients = async () => {
             const dbRef = ref(database);
+            const agentId = localStorage.getItem("loggedInAgentId");
+            
+            if (!agentId) {
+                // Redirect to login page if no agent ID is found
+                window.location.href = "login.html";
+                return;
+            }
+
             try {
-                const snapshot = await get(child(dbRef, 'clients'));
+                const snapshot = await get(child(dbRef, `agents/${agentId}/clients`));
                 if (snapshot.exists()) {
                     const clients = snapshot.val();
                     clientList = Object.values(clients); // Convert object to array
                     filteredList = [...clientList]; // Initialize filtered list
                     renderTable(filteredList);
                 } else {
-                    console.error("No clients data available.");
+                    console.error("No clients data available for this agent.");
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -305,8 +335,51 @@
             renderTable(filteredList);
         });
 
+        // Fetching and displaying agent information
+        // Fetching and displaying agent information
+document.addEventListener("DOMContentLoaded", async () => {
+    const agentId = localStorage.getItem("loggedInAgentId");
+    const agentDisplay = document.getElementById("agentDisplay");
+
+    if (!agentId) {
+        // Redirect to login page if agent ID is not found
+        window.location.href = "login.html";
+        return;
+    }
+
+    try {
+        const dbRef = ref(database);
+        const snapshot = await get(child(dbRef, `users/${agentId}`)); // Adjusted path to 'users'
+        if (snapshot.exists()) {
+            const userData = snapshot.val();
+            const agentName = userData.name || "N/A";
+
+            // Display agentId and name
+            agentDisplay.innerHTML = `
+                Agent ID : <strong>${agentId}</strong><br>
+                Agent name  : <strong>${agentName}</strong>
+            `;
+        } else {
+            console.error("No user data found for this ID.");
+        }
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+    }
+
+    const addButton = document.getElementById("addButton");
+    addButton.addEventListener("click", () => {
+        window.location.href = `add.html?agent_id=${agentId}`;
+    });
+});
+
+
+        document.getElementById("logoutButton").addEventListener("click", () => {
+            // Clear localStorage and log out
+            //localStorage.removeItem("loggedInAgentId");
+            window.location.href = "login.html";
+        });
+
         fetchClients();
     </script>
 </body>
-
 </html>
