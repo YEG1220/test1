@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
     <style>
         body {
@@ -17,65 +19,71 @@
             background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
         }
         .main {
-        width: 350px;
-        height: 500px;
-        overflow: hidden;
-        background: url("login.jpeg") no-repeat center/cover;
-        border-radius: 10px;
-        box-shadow: 5px 20px 50px #000;
+            width: 350px;
+            height: 500px;
+            overflow: hidden;
+            background: url("login.jpeg") no-repeat center/cover;
+            border-radius: 10px;
+            box-shadow: 5px 20px 50px #000;
         }
         input {
-        width: 60%;
-        height: 20px;
-        background: #e0dede;
-        justify-content: center;
-        display: flex;
-        margin: 20px auto;
-        padding: 10px;
-        border: none;
-        outline: none;
-        border-radius: 5px;
+            width: 60%;
+            height: 20px;
+            background: #e0dede;
+            justify-content: center;
+            display: flex;
+            margin: 20px auto;
+            padding: 10px;
+            border: none;
+            outline: none;
+            border-radius: 5px;
+        }
+        .input i {
+            cursor: pointer;
         }
         button {
-        width: 60%;
-        height: 40px;
-        margin: 10px auto;
-        justify-content: center;
-        display: block;
-        color: #fff;
-        background: #ad6500;
-        font-size: 1em;
-        font-weight: bold;
-        margin-top: 20px;
-        outline: none;
-        border: none;
-        border-radius: 5px;
-        transition: .2s ease-in;
-        cursor: pointer;
+            width: 60%;
+            height: 40px;
+            margin: 10px auto;
+            justify-content: center;
+            display: block;
+            color: #fff;
+            background: #ad6500;
+            font-size: 1em;
+            font-weight: bold;
+            margin-top: 20px;
+            outline: none;
+            border: none;
+            border-radius: 5px;
+            transition: .2s ease-in;
+            cursor: pointer;
         }
         button:hover {
             background: orange;
         }
         label {
-        color: #fff;
-        font-size: 2.3em;
-        justify-content: center;
-        display: flex;
-        margin-top: 100px;
-        font-weight: bold;
+            color: #fff;
+            font-size: 2.3em;
+            justify-content: center;
+            display: flex;
+            margin-top: 100px;
+            font-weight: bold;
         }
-        .signin-link {
+        .signin-link, .forgot-password-link {
             text-align: center;
             margin-top: 10px;
             font-size: 0.9em;
         }
-        .signin-link a {
+        .signin-link a, .forgot-password-link a {
             color: #fff;
             text-decoration: none;
             transition: 0.3s;
         }
-        .signin-link a:hover {
+        .signin-link a:hover, .forgot-password-link a:hover {
             color: orange;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -83,20 +91,41 @@
     <div class="main">
         <form id="loginForm">
             <label>LOGIN</label>
-            <input type="text" id="agentId" name="agentId" placeholder="Agent ID" required>
-            <input type="password" id="password" name="password" placeholder="Password" required>
+            <div class="input">
+                <input type="text" id="agentId" name="agentId" placeholder="Agent ID" required>
+            </div>
+            <div class="input">
+                <input type="password" id="password" name="password" placeholder="Password" required>
+                
+            </div>
             <button type="submit">Enter</button>
             <div class="signin-link">
-                Already have an account? <a href="index.html">Sign In</a>
+                Don't have an account? <a href="signup.html">Sign Up</a>
+            </div>
+            <div class="forgot-password-link">
+                <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+            </div>
+        </form>
+
+        <form id="forgotPasswordForm" class="hidden">
+            <label>RESET PASSWORD</label>
+            <div class="input">
+                <input type="text" id="resetAgentId" name="resetAgentId" placeholder="Agent ID" required>
+            </div>
+            <div class="input">
+                <input type="password" id="newPassword" name="newPassword" placeholder="New Password" required>
+            </div>
+            <button type="submit">Reset Password</button>
+            <div class="signin-link">
+                <a href="#" id="backToLoginLink">Back to Login</a>
             </div>
         </form>
     </div>
-    
 
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+        import { getDatabase, ref, get, child, update } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -145,7 +174,8 @@
 
                             if (user.password === password) {
                                 alert("Login successful!");
-                                window.location.href = "home2.html";
+                                localStorage.setItem("loggedInAgentId", agentId); // Store agentId in localStorage
+                                window.location.href = "home3.html"; // Redirect to home3.html
                                 return;
                             } else {
                                 alert("Incorrect password. Please try again.");
@@ -162,19 +192,108 @@
                     console.log("Database is empty or inaccessible.");
                 }
             } catch (error) {
-    console.error("Error during login process:", error);
-    if (error.message.includes("Permission denied")) {
-        alert("Database access denied. Please check Firebase rules.");
-    } else {
-        alert("Login failed: " + error.message);
-    }
-}
-
+                console.error("Error during login process:", error);
+                if (error.message.includes("Permission denied")) {
+                    alert("Database access denied. Please check Firebase rules.");
+                } else {
+                    alert("Login failed: " + error.message);
+                }
+            }
         };
 
-        // Add event listener to the form
+        // Handle password reset
+        const handlePasswordReset = async (event) => {
+            event.preventDefault();
+            const resetAgentId = document.getElementById("resetAgentId").value.trim();
+            const newPassword = document.getElementById("newPassword").value.trim();
+
+            if (!resetAgentId || !newPassword) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            try {
+                console.log("Attempting to fetch users from database for password reset...");
+                const dbRef = ref(database);
+                const snapshot = await get(child(dbRef, `users`));
+
+                if (snapshot.exists()) {
+                    const users = snapshot.val();
+                    console.log("Fetched users:", users);
+
+                    let userFound = false;
+
+                    for (const userId in users) {
+                        const user = users[userId];
+                        console.log(`Checking user ID: ${userId}, Data:`, user);
+
+                        if (user.agentId === resetAgentId) {
+                            userFound = true;
+                            const updates = {};
+                            updates[`/users/${userId}/password`] = newPassword;
+                            await update(ref(database), updates);
+                            alert("Password reset successful!");
+                            document.getElementById("loginForm").classList.remove("hidden");
+                            document.getElementById("forgotPasswordForm").classList.add("hidden");
+                            return;
+                        }
+                    }
+
+                    if (!userFound) {
+                        alert("Agent ID not found. Please check your credentials.");
+                    }
+                } else {
+                    alert("No users found in the database.");
+                    console.log("Database is empty or inaccessible.");
+                }
+            } catch (error) {
+                console.error("Error during password reset process:", error);
+                if (error.message.includes("Permission denied")) {
+                    alert("Database access denied. Please check Firebase rules.");
+                } else {
+                    alert("Password reset failed: " + error.message);
+                }
+            }
+        };
+
+        // Add event listener to the forms
         const loginForm = document.getElementById("loginForm");
         loginForm.addEventListener("submit", handleLogin);
+
+        const forgotPasswordForm = document.getElementById("forgotPasswordForm");
+        forgotPasswordForm.addEventListener("submit", handlePasswordReset);
+
+        // Toggle forms visibility
+        document.getElementById("forgotPasswordLink").addEventListener("click", (event) => {
+            event.preventDefault();
+            document.getElementById("loginForm").classList.add("hidden");
+            document.getElementById("forgotPasswordForm").classList.remove("hidden");
+        });
+
+        document.getElementById("backToLoginLink").addEventListener("click", (event) => {
+            event.preventDefault();
+            document.getElementById("loginForm").classList.remove("hidden");
+            document.getElementById("forgotPasswordForm").classList.add("hidden");
+        });
+
+        const togglePassword = document.getElementById("togglePassword");
+        const passwordInput = document.getElementById("password");
+
+        const toggleNewPassword = document.getElementById("toggleNewPassword");
+        const newPasswordInput = document.getElementById("newPassword");
+
+        // Toggle password visibility
+        togglePassword.addEventListener("click", () => {
+            const isPasswordVisible = passwordInput.type === "password";
+            passwordInput.type = isPasswordVisible ? "text" : "password";
+            togglePassword.className = isPasswordVisible ? "fa fa-eye-slash" : "fa fa-eye";
+        });
+
+        toggleNewPassword.addEventListener("click", () => {
+            const isPasswordVisible = newPasswordInput.type === "password";
+            newPasswordInput.type = isPasswordVisible ? "text" : "password";
+            toggleNewPassword.className = isPasswordVisible ? "fa fa-eye-slash" : "fa fa-eye";
+        });
     </script>
 </body>
 </html>
