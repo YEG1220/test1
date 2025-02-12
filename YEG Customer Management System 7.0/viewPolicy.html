@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&amp;display=swap" rel="stylesheet">
+    <style>
+        /* Flexibility for the header */
+        .header {
+            background-color: rgba(255, 166, 0, 0.148);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+            margin-left: 20px;
+        }
+
+        h1 {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            color: #ff6f00;
+            font-size: 26px;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        
+        .back-button,
+        .add-button {
+            transition: all 0.3s ease;
+            display: inline-block;
+            background-color: #ff6f00;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-left: auto;
+        }
+
+        .logOut-button{
+            transition: all 0.3s ease;
+            display: inline-block;
+            background-color: #ff6f00;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-left: auto;
+            margin-right: 15px;
+            
+        }
+
+        .logOut-button:hover,
+        .back-button:hover,
+        .add-button:hover {
+            background-color: #ff8c00;
+        }
+
+        /* Ensure search bar and button align well on small screens */
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            /* Adjust the space between the search bar and table */
+            justify-content: flex-start;
+            padding-left: 10px;
+            width: 100%;
+        }
+
+        .search-container input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            margin-left: 0;
+            margin-right: 10px;
+            margin-bottom: 1px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #ffb969;
+        }
+
+        .detail-button {
+            background-color: #ffdd7e;
+            color: rgb(0, 0, 0);
+            border: none;
+            padding: 10px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .detail-button:hover {
+            background-color: #ffbb00;
+            transform: scale(1.05);
+        }
+
+        .detail-button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(255, 200, 0, 0.5);
+        }
+
+        @media screen and (max-width: 768px) {
+            .content {
+                margin-left: 0;
+                padding: 10px;
+            }
+            .container {
+                width: 100%;
+            }
+
+            .search-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .add-button {
+                margin-left: 0;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+            }
+
+            .logo {
+                width: 120px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .client-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <img class="logo" src="YEGlogo.png">
+        <h1>Client Management System - Policy</h1>
+        <span id="agentDisplay" style="margin-left: 10px; margin-right: 10px; font-size: 18px; color: gray; text-align:right;"></span>
+    </div>
+    <div class="search-container">
+        <div>
+            <button class="back-button" id="backButton" onclick="window.location.href='Home3.html';">Back</button>
+                <button class="add-button" id="addButton" onclick="nextPage();">Add</button>
+        </div>
+        <input type="text" id="searchBar" placeholder="Search policy...">
+        <div>
+            <button class="logOut-button" id="logoutButton">Log Out</button>
+        </div>
+    </div>
+    <div class="container">
+        <table id="clientTable">
+            <thead>
+                <tr>
+                    <th rowspan="3">Company</th>
+                    <th rowspan="3">Policy No</th>
+                    <th rowspan="3">Plan</th>
+                    <th rowspan="3">Inforce Date</th>
+                    <th colspan="6">Sum Assured</th>
+                    <th rowspan="3">Mode of Payment</th>
+                    <th rowspan="3">Premium (RM)</th>
+                    <th rowspan="3">Maturity</th>
+                    <th rowspan="3">Nominee</th>
+                    <th rowspan="3">Policy Value</th>
+                </tr>
+                <tr>
+                    <th rowspan="2">Death/TPD</th>
+                    <th rowspan="2">Critical Illness</th>
+                    <th rowspan="2">Accident</th>
+                    <th colspan="3">Medical Insurance</th>
+                </tr>
+                <tr>
+                    <th>R&B</th>
+                    <th>Annual Limit</th>
+                    <th>Lifetime</th>
+                </tr>
+            </thead>
+
+            <tbody id="tableBody">
+                <!-- Data will be inserted here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "API_KEY",
+            authDomain: "yeg2-31e6e.firebaseapp.com",
+            databaseURL: "https://yeg2-31e6e-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "yeg2-31e6e",
+            storageBucket: "yeg2-31e6e.appspot.com",
+            messagingSenderId: "SENDER_ID",
+            appId: "APP_ID",
+        };
+    
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+    
+        // 获取表格元素
+        const tableBody = document.getElementById("tableBody");
+
+
+        // Fetching and displaying agent information
+        document.addEventListener("DOMContentLoaded", async () => {
+            const agentId = localStorage.getItem("loggedInAgentId");
+            const agentDisplay = document.getElementById("agentDisplay");
+
+            if (!agentId) {
+                // Redirect to login page if agent ID is not found
+                window.location.href = "login.html";
+                return;
+            }
+
+            try {
+                const dbRef = ref(database);
+                const snapshot = await get(child(dbRef, `users/${agentId}`)); // Adjusted path to 'users/${agentId}'
+                if (snapshot.exists()) {
+                    const userData = snapshot.val(); // Get user data
+                    const agentName = userData.name || "N/A"; // Extract name
+
+                    // Display agentId and name
+                    agentDisplay.innerHTML = `
+                Agent ID : <strong>${agentId}</strong><br>
+                Agent Name : <strong>${agentName}</strong>
+            `;
+                } else {
+                    console.error(`No data found for user with ID ${agentId}`);
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        });
+
+        // Function to fetch policies from Firebase
+        const fetchPolicies = async () => {
+            const params = new URLSearchParams(window.location.search);
+            const agentId = localStorage.getItem("loggedInAgentId"); // Assuming loggedInAgentId is stored in localStorage after login
+            const clientId = params.get("clientId");
+            console.log("Client ID:", clientId); // Debugging log to check clientId
+
+            if (!agentId || !clientId) {
+                alert("Agent ID or Client ID missing. Please check your login status!");
+                return;
+            }
+
+            try {
+                // Fetch data from Firebase
+                const dbRef = ref(database);
+                const policiesRef = child(dbRef, `agents/${agentId}/clients/${clientId}/policies`);
+                const snapshot = await get(policiesRef);
+
+                if (snapshot.exists()) {
+                    const policies = snapshot.val();
+                    console.log("Fetched policies:", policies);
+
+                    // Clear the existing table content
+                    tableBody.innerHTML = "";
+
+                    // Display policies
+                    Object.entries(policies).forEach(([policyNo, policyData]) => {
+                        const row = document.createElement("tr");
+
+                        row.innerHTML = `
+                            <td>${policyData['Company'] || 'N/A'}</td>
+                            <td>${policyNo}</td>
+                            <td>${policyData['Plan Name'] || 'N/A'}</td>
+                            <td>${policyData['Commence Date'] || 'N/A'}</td>
+                            <td>${policyData['Death TPD'] || 'N/A'}</td>
+                            <td>${policyData['Critical illness'] || 'N/A'}</td>
+                            <td>${policyData['Personal Accident'] || 'N/A'}</td>
+                            <td>${policyData['Daily Room Board'] || 'N/A'}</td>
+                            <td>${policyData['Annual Limit'] || 'N/A'}</td>
+                            <td>${policyData['Life Time Limit'] || 'N/A'}</td>
+                            <td>${policyData['Payment Mode'] || 'N/A'}</td>
+                            <td>${policyData['Premium'] || 'N/A'}</td>
+                            <td>${policyData['Maturity Date'] || 'N/A'}</td>
+                            <td>${['Nominee 1', 'Nominee 2', 'Nominee 3', 'Nominee 4']
+                                .map(nominee => policyData[nominee])
+                                .filter(value => value) // Removes undefined or empty values
+                                .join(', ') || 'N/A'}
+                            </td>
+
+                            <td>
+                                <button class="detail-button" button onclick="viewPolicy('${policyNo}')">View Details</button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No policy data available</td></tr>`;
+                    console.warn("No policies found for this client.");
+                }
+            } catch (error) {
+                console.error("Error fetching policies:", error);
+                alert("Error fetching policy data.");
+            }
+        };
+
+        // Search functionality
+        document.getElementById("searchBar").addEventListener("input", function () {
+            const searchQuery = this.value.toLowerCase();
+
+            // Loop through all table rows
+            const rows = tableBody.querySelectorAll("tr");
+            rows.forEach(row => {
+                const cells = row.querySelectorAll("td");
+                let matchFound = false;
+
+                // Check if any cell contains the search query
+                cells.forEach(cell => {
+                    if (cell.textContent.toLowerCase().includes(searchQuery)) {
+                        matchFound = true;
+                    }
+                });
+
+                // Hide or show row based on match
+                row.style.display = matchFound ? "" : "none";
+            });
+        });
+    
+        // 查看保单详情
+        window.viewPolicy = function(policyNo) {
+            const params = new URLSearchParams(window.location.search);
+            const clientId = params.get("clientId");
+            window.location.href = `policyMoreDisplay.html?clientId=${clientId}&policyNo=${policyNo}`;
+        }
+    
+        // 页面加载时执行
+        document.addEventListener("DOMContentLoaded", fetchPolicies);
+
+        document.getElementById("logoutButton").addEventListener("click", () => {
+            // Clear localStorage and log out
+            //localStorage.removeItem("loggedInAgentId");
+            window.location.href = "login.html";
+        });
+
+        // 添加 nextPage 函数
+        window.nextPage = function () {
+            const params = new URLSearchParams(window.location.search);
+            const clientId = params.get("clientId");
+            window.location.href = "addPolicy.html?clientId=" + clientId;
+        }
+    </script>    
+</body>
+</html>
